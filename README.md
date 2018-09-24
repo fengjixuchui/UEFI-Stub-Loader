@@ -5,7 +5,7 @@ Load the Linux EFI Stub (or any EFI application) on systems that don't support U
 
 **About this program**  
 
- This program is a 64-bit UEFI program loader for UEFI-based systems. It is designed to boot the Linux kernel's EFI stub and pass boot arguments from a text file to it. This is especially useful for machines whose vendor firmware does not support passing arguments to UEFI applications. It can also be used to boot any EFI application that can take command line options. Note: Macs are not officially supported, but it might work on them.  
+ This program is a 64-bit UEFI program loader for UEFI-based systems. It is designed to boot the Linux kernel's EFI stub and pass boot arguments from a text file to it. This is especially useful for machines whose vendor firmware does not support passing arguments to UEFI applications (e.g. Dell XPS 9560). It can also be used to boot any EFI application that can take command line options. Note: Macs are not officially supported, but it might work on them.  
 
 **Loader Features**  
 
