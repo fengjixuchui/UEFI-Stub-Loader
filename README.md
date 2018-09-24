@@ -21,21 +21,7 @@ Load the Linux EFI Stub (or any EFI application) on systems that don't support U
 **Target System Requirements**  
 
 - 64-Bit architecture (only little-endian binaries are provided)  
-- Secure Boot must be disabled  
-
-**Usage**
-
- Put this program anywhere you want in the EFI system partition and point your UEFI firmware to it as a boot option. You will also need to put your EFI kernel image somewhere on the same partition, and you will need to make a file called Kernelcmd.txt, which should be stored at the root of the partition.  
-
-**Kernelcmd.txt Format and Contents**
-
- Kernelcmd.txt should be stored in UTF-16 format at the root of the EFI system parition. Windows Notepad and Wordpad can save text files in this format (select "Unicode" as the format in the "Save As" dialog). Linux users can use gedit or xed, saving as a .txt file with UTF16 encoding. Also, it does not matter if the file uses Windows (CRLF) or Unix (LF) line endings, but the file does need a 2-byte identification Byte Order Mark (BOM). Don't worry too much about the BOM; it gets added automatically by all of the aforementioned editors when saving with the correct encoding.  
-
- The contents of the text file are simple: only three lines are needed. The first line should be the location of the kernel to be booted relative to the root of the EFI system partition, e.g. \EFI\ubuntu\vmlinuz.efi, and the second line is the string of boot arguments to be passed to the kernel, e.g. "root=/dev/nvme0n1p5 initrd=\\EFI\\ubuntu\\initrd.img ro rootfstype=ext4 debug ignore_loglevel libata.force=dump_id crashkernel=384M-:128M quiet splash acpi_rev_override=1 acpi_osi=Linux" (without quotes!). The third line should be blank--and make sure there is a third line, as this program expects a line break to denote the end of the kernel arguments.** That's it!  
-
- ** Technically you could use the remainder of the text file to contain an actual text document. You could put this info in there if you wanted, or your favorite song lyrics, though the smaller the file the faster it is to load.  
-
- NOTE: If for some reason you need to use this with a big endian system, save the text file as "Unicode big endian." You will also need to compile this program for your big endian target.  
+- Secure Boot must be disabled   
 
 ***See the "Releases" tab for usage information and downloads, and please post any bugs, feature requests, etc. in "Issues."***  
 
