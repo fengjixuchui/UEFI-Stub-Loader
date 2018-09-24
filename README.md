@@ -7,6 +7,22 @@ Load the Linux EFI Stub (or any EFI application) on systems that don't support U
 
  This program is a 64-bit UEFI program loader for UEFI-based systems. It is designed to boot the Linux kernel's EFI stub and pass boot arguments from a text file to it. This is especially useful for machines whose vendor firmware does not support passing arguments to UEFI applications. It can also be used to boot any EFI application that can take command line options. Note: Macs are not officially supported, but it might work on them.  
 
+**Loader Features**  
+
+- UEFI 2.x support
+- Loads and executes kernels compiled as native 64-bit UEFI applications (like the Linux kernel)
+- Passes user-written commands (from a plain UTF16 text file) to loaded EFI applications
+- Allows arbitrary placement of itself in addition to kernel images on the EFI system partition
+- Fits on a floppy diskette, and some systems can actually boot it from a floppy
+- Minimal UEFI development environment tuned for Windows, Mac, and Linux included in repository ***(1)***
+
+***(1)*** *See the below "How to Build from Source" section for complete compilation instructions for each platform, and then all you need to do is put your code in "src" and "inc" in place of mine. Once compiled, your program can be run in the same way as described in "Releases" using a UEFI-supporting VM like Hyper-V or on actual hardware.*  
+
+**Target System Requirements**  
+
+- 64-Bit architecture (only little-endian binaries are provided)  
+- Secure Boot must be disabled  
+
 **Usage**
 
  Put this program anywhere you want in the EFI system partition and point your UEFI firmware to it as a boot option. You will also need to put your EFI kernel image somewhere on the same partition, and you will need to make a file called Kernelcmd.txt, which should be stored at the root of the partition.  
@@ -24,22 +40,6 @@ Load the Linux EFI Stub (or any EFI application) on systems that don't support U
 ***See the "Releases" tab for usage information and downloads, and please post any bugs, feature requests, etc. in "Issues."***  
 
 Derived from Simple-UEFI-Bootloader, which is designed for booting custom kernels: https://github.com/KNNSpeed/Simple-UEFI-Bootloader/  
-
-**Loader Features**  
-
-- UEFI 2.x support
-- Loads and executes kernels compiled as native 64-bit UEFI applications (like the Linux kernel)
-- Passes user-written commands (from a plain UTF16 text file) to loaded EFI applications
-- Allows arbitrary placement of itself in addition to kernel images on the EFI system partition
-- Fits on a floppy diskette, and some systems can actually boot it from a floppy
-- Minimal UEFI development environment tuned for Windows, Mac, and Linux included in repository ***(1)***
-
-***(1)*** *See the below "How to Build from Source" section for complete compilation instructions for each platform, and then all you need to do is put your code in "src" and "inc" in place of mine. Once compiled, your program can be run in the same way as described in "Releases" using a UEFI-supporting VM like Hyper-V or on actual hardware.*  
-
-**Target System Requirements**  
-
-- 64-Bit architecture (only little-endian binaries are provided)  
-- Secure Boot must be disabled  
 
 **License and Crediting**  
 
