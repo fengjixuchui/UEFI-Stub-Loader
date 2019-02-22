@@ -1,13 +1,13 @@
-## UEFI Stub Loader
+# UEFI Stub Loader
 Load the Linux EFI Stub (or any EFI application) on systems that don't support UEFI firmware command lines.  
 
 **Version 1.0**
 
-**About this program**  
+## About this program  
 
 This program is a 64-bit UEFI program loader for UEFI-based systems. It is designed to boot the Linux kernel's EFI stub and pass boot arguments from a text file to it. This is especially useful for machines whose vendor firmware does not support passing arguments to UEFI applications (e.g. Dell XPS 9560, MacBook Pros). It can also be used to boot any EFI application that can take command line options.
 
-**Loader Features**  
+## Loader Features  
 
 - UEFI 2.x support for PCs, and it also works on Macs with 64-bit EFI (e.g. MacBook Pro Late 2013)
 - Loads and executes kernels compiled as native 64-bit UEFI applications (like the Linux kernel)
@@ -18,7 +18,7 @@ This program is a 64-bit UEFI program loader for UEFI-based systems. It is desig
 
 ***(1)*** *See the below "How to Build from Source" section for complete compilation instructions for each platform, and then all you need to do is put your code in "src" and "inc" in place of mine. Once compiled, your program can be run in the same way as described in "Releases" using a UEFI-supporting VM like Hyper-V or on actual hardware.*  
 
-**Target System Requirements**  
+## Target System Requirements  
 
 - 64-Bit architecture (only little-endian binaries are provided)  
 - Secure Boot must be disabled   
@@ -27,31 +27,17 @@ This program is a 64-bit UEFI program loader for UEFI-based systems. It is desig
 
 Derived from Simple-UEFI-Bootloader, which is designed for booting custom kernels: https://github.com/KNNSpeed/Simple-UEFI-Bootloader/  
 
-**License and Crediting**  
+## License and Crediting  
 
+Please see the LICENSE file for the complete terms and further information.
+  
 ***TL;DR:***  
 
-Effectively PD (Public Domain) for all code in this repository not already covered by a license (i.e. my original source code), **as long as you give proper credit to this project.** See below for an example of what that might look like--more examples are included in the LICENSE file. If you don't give credit to this project, per the license you aren't allowed to use it. That's pretty much it (and why it's "effectively" or "almost" PD, or "PD with Credit" if I have to give it a nickname).  
+If you don't give credit to this project, per the license you aren't allowed to do anything with any of its source code that isn't already covered by an existing license (in other words, my license covers the code I wrote). That's pretty much it, and why it's "almost" PD, or "PD with Credit" if I have to give it a nickname, as there's no restriction on what it gets used for as long as the license is satisfied. If you have any issues, feature requests, etc. please post in "Issues" so it can be attended to/fixed.  
 
-Please see the LICENSE file for further information on all licenses covering code created for and used in this project.  
+Note that many of these files already have appropriate crediting inside, so you could just leave what's already there to satisfy the terms for those files. You really should see the license file for complete information, though (it's short!!).  
 
-*Example Citation:*  
-
-From KNNSpeed's "UEFI Stub Loader":  
-https://github.com/KNNSpeed/UEFI-Stub-Loader  
-V1.0, [Date you got it]  
-
-***Slightly More Detailed License Summary:***
-
-If you want to use, copy, modify, and/or distribute this project's original source code, in other words the code in this repository not already covered under any license, simply copy & paste the below 3 lines somewhere reasonable like in an acknowledgements or references section, as a comment in the code, at the bottom of a README or in a LICENSE file, etc. Then, change "[Date you got it]" to the date you acquired the code, and don't sue me if something goes wrong - especially since there's no warranty (and sometimes firmware vendors just don't follow the UEFI spec in unforeseen ways, but it would be great if you posted an issue so I could fix it!). Thanks!
-
-From KNNSpeed's "UEFI Stub Loader":  
-https://github.com/KNNSpeed/UEFI-Stub-Loader  
-V1.0, [Date you got it]  
-
-(As mentioned in the TL;DR, please see the LICENSE file for further information on all licenses covering code created for and used in this project.)  
-
-**How to Build from Source**  
+## How to Build from Source 
 
 Requires GCC 7.1.0 or later and Binutils 2.29.1 or later. I cannot make any guarantees whatsoever for earlier versions, especially with the number of compilation and linking flags used.  
 
@@ -121,11 +107,11 @@ Requires GCC 7.1.0 or later and Binutils 2.29.1 or later. I cannot make any guar
 
     For more information about building GCC and Binutils, see these: http://www.linuxfromscratch.org/blfs/view/cvs/general/gcc.html & http://www.linuxfromscratch.org/lfs/view/development/chapter06/binutils.html  
 
-**Change Log**
+## Change Log
 
 V1.0 (9/23/2018) - Initial release. No bugs with this release so far.
 
-**Acknowledgements**  
+## Acknowledgements  
 
 - [Nigel Croxon](https://sourceforge.net/u/noxorc/profile/) for [GNU-EFI](https://sourceforge.net/projects/gnu-efi/)
 - [UEFI Forum](http://www.uefi.org/) for the [UEFI Specification Version 2.7 (Errata A)](http://www.uefi.org/sites/default/files/resources/UEFI%20Spec%202_7_A%20Sept%206.pdf), as well as for [previous UEFI 2.x specifications](http://www.uefi.org/specifications)
