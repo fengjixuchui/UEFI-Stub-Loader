@@ -1,4 +1,4 @@
-/* 
+/*
     PE32+ header file
  */
 #ifndef _PE_H
@@ -7,7 +7,7 @@
 #define IMAGE_DOS_SIGNATURE                 0x5A4D      // MZ
 #define IMAGE_OS2_SIGNATURE                 0x454E      // NE
 #define IMAGE_OS2_SIGNATURE_LE              0x454C      // LE
-#define IMAGE_NT_SIGNATURE                  0x00004550  // PE00  
+#define IMAGE_NT_SIGNATURE                  0x00004550  // PE00
 #define IMAGE_EDOS_SIGNATURE                0x44454550  // PEED
 
 
@@ -104,6 +104,7 @@ typedef struct _IMAGE_FILE_HEADER {
 #define IMAGE_FILE_MACHINE_TAHOE             0x7cc   // Intel EM machine
 #define IMAGE_FILE_MACHINE_EBC               0xebc   // EFI Byte Code
 #define IMAGE_FILE_MACHINE_X64               0x8664  // x86_64
+#define IMAGE_FILE_MACHINE_AA64              0xAA64  // Aarch64
 //
 // Directory format.
 //
@@ -133,7 +134,7 @@ typedef struct _IMAGE_OPTIONAL_HEADER {
     UINT32    AddressOfEntryPoint;
     UINT32    BaseOfCode;
     UINT32    BaseOfData;
-                
+
     //
     // NT additional fields.
     //
@@ -147,7 +148,7 @@ typedef struct _IMAGE_OPTIONAL_HEADER {
     UINT16   MinorImageVersion;
     UINT16   MajorSubsystemVersion;
     UINT16   MinorSubsystemVersion;
-    UINT32   Reserved1;
+    UINT32   Win32VersionValue;
     UINT32   SizeOfImage;
     UINT32   SizeOfHeaders;
     UINT32   CheckSum;

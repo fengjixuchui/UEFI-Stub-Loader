@@ -71,7 +71,7 @@ RtStrnCpy (
 {
     UINTN Size = RtStrnLen(Src, Len);
     if (Size != Len)
-	RtSetMem(Dest + Len, '\0', (Len - Size) * sizeof(CHAR16));
+    RtSetMem(Dest + Len, '\0', (UINT8)((Len - Size) * sizeof(CHAR16)));
     RtCopyMem(Dest, Src, Size * sizeof(CHAR16));
 }
 
@@ -94,7 +94,7 @@ RtStpCpy (
 }
 
 #ifndef __GNUC__
-#pragma RUNTIME_CODE(RtStrnCpy)
+#pragma RUNTIME_CODE(RtStpnCpy)
 #endif
 CHAR16 *
 RUNTIMEFUNCTION
@@ -107,7 +107,7 @@ RtStpnCpy (
 {
     UINTN Size = RtStrnLen(Src, Len);
     if (Size != Len)
-	RtSetMem(Dest + Len, '\0', (Len - Size) * sizeof(CHAR16));
+        RtSetMem(Dest + Size, (Len - Size) * sizeof(CHAR16), '\0');
     RtCopyMem(Dest, Src, Size * sizeof(CHAR16));
     return Dest + Size;
 }
@@ -126,7 +126,7 @@ RtStrCat (
 }
 
 #ifndef __GNUC__
-#pragma RUNTIME_CODE(RtStrCat)
+#pragma RUNTIME_CODE(RtStrnCat)
 #endif
 VOID
 RUNTIMEFUNCTION
@@ -136,7 +136,12 @@ RtStrnCat (
     IN UINTN    Len
     )
 {
-    RtStrnCpy(Dest+StrLen(Dest), Src, Len);
+    UINTN DestSize, Size;
+
+    DestSize = StrLen(Dest);
+    Size = RtStrnLen(Src, Len);
+    RtCopyMem(Dest + DestSize, Src, Size * sizeof(CHAR16));
+    Dest[DestSize + Size] = '\0';
 }
 
 #ifndef __GNUC__
