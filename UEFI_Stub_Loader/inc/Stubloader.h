@@ -2,7 +2,7 @@
 //  UEFI Stub Loader: Main Header
 //==================================================================================================================================
 //
-// Version 1.0
+// Version 1.1
 //
 // Author:
 //  KNNSpeed
@@ -20,19 +20,17 @@
 #include <efi.h>
 #include <efilib.h>
 
-#include <pe.h>
-
 //==================================================================================================================================
 // Useful Debugging Code
 //==================================================================================================================================
 //
 // Enable useful debugging prints and convenient key-awaiting pauses
 //
-//NOTE: Due to little endianness of x86-64, all printed data at dereferenced pointers is in LITTLE ENDIAN, so each byte (0xXX) is read
+//NOTE: Due to little endianness, all printed data at dereferenced pointers is in LITTLE ENDIAN, so each byte (0xXX) is read
 // left to right while the byte order is reversed (right to left)!!
 //
 // Debug binary has this uncommented, release has it commented
-// #define ENABLE_DEBUG // Master debug enable switch
+//#define ENABLE_DEBUG // Master debug enable switch
 
 #ifdef ENABLE_DEBUG
     #define DISABLE_UEFI_WATCHDOG_TIMER

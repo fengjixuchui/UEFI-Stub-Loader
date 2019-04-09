@@ -1,7 +1,7 @@
 # UEFI Stub Loader
-Load the Linux EFI Stub (or any EFI application) on systems that don't support UEFI firmware command lines.  
+Load the Linux EFI Stub (or any EFI application) on 64-bit systems that don't support UEFI firmware command lines. ARM64 and x86_64 binaries are provided.  
 
-**Version 1.0**
+**Version 1.1**
 
 ## About this program  
 
@@ -14,13 +14,13 @@ This program is a 64-bit UEFI program loader for UEFI-based systems. It is desig
 - Passes user-written commands (from a plain UTF16 text file) to loaded EFI applications
 - Allows arbitrary placement of itself in addition to kernel images on the EFI system partition
 - Fits on a floppy diskette, and some systems can actually boot it from a floppy
-- Minimal UEFI development environment tuned for Windows, Mac, and Linux included in repository ***(1)***
+- Minimal x86_64 UEFI development environment tuned for Windows, Mac, and Linux included in repository ***(1)***
 
 ***(1)*** *See the below "How to Build from Source" section for complete compilation instructions for each platform, and then all you need to do is put your code in "src" and "inc" in place of mine. Once compiled, your program can be run in the same way as described in "Releases" using a UEFI-supporting VM like Hyper-V or on actual hardware.*  
 
 ## Target System Requirements  
 
-- 64-Bit architecture (only little-endian binaries are provided)  
+- 64-Bit architecture with UEFI (only little-endian ARM64 and x86_64 binaries are provided)  
 - Secure Boot must be disabled   
 
 ***See the "Releases" tab for usage information and downloads, and please post any bugs, feature requests, etc. in "Issues."***  
@@ -30,14 +30,16 @@ Derived from Simple-UEFI-Bootloader, which is designed for booting custom kernel
 ## License and Crediting  
 
 Please see the LICENSE file for the complete terms and further information.
-  
+
 ***TL;DR:***  
 
-If you don't give credit to this project, per the license you aren't allowed to do anything with any of its source code that isn't already covered by an existing license (in other words, my license covers the code I wrote). That's pretty much it, and why it's "almost" PD, or "PD with Credit" if I have to give it a nickname, as there's no restriction on what it gets used for as long as the license is satisfied. If you have any issues, feature requests, etc. please post in "Issues" so it can be attended to/fixed.  
+If you don't give credit to this project, per the license you aren't allowed to do anything with any of its source code that isn't already covered by an existing license (in other words, my license covers the code I wrote). That's pretty much it, and why it's "almost" PD, or "PD with Credit" if I have to give it a nickname: there's no restriction on what it gets used for as long as the license is satisfied. If you have any issues, feature requests, etc. please post in "Issues" so it can be attended to/fixed.  
 
 Note that many of these files already have appropriate crediting inside, so you could just leave what's already there to satisfy the terms for those files. You really should see the license file for complete information, though (it's short!!).  
 
-## How to Build from Source 
+## How to Build from Source  
+
+For ARM64 instructions, see https://github.com/KNNSpeed/Simple-UEFI-Bootloader-ARM64 (clone it and swap out the "src" and "inc" folders for the ones here). Similarly, the below instructions are essentially the same from https://github.com/KNNSpeed/Simple-UEFI-Bootloader, as the only difference is the name of the output file.
 
 Requires GCC 7.1.0 or later and Binutils 2.29.1 or later. I cannot make any guarantees whatsoever for earlier versions, especially with the number of compilation and linking flags used.  
 
@@ -46,7 +48,7 @@ Requires GCC 7.1.0 or later and Binutils 2.29.1 or later. I cannot make any guar
 
 2. Download MinGW-w64 "x86_64-posix-seh" from https://sourceforge.net/projects/mingw-w64/ (click "Files" and scroll down - pay attention to the version numbers!).
 
-3. Extract the archive into the "Backend" folder.
+3. Extract the archive into the "Backend" folder. As a check, "Backend/mingw-w64/bin" will exist if done correctly.
 
 4. Open Windows PowerShell or the Command Prompt in the "UEFI-Stub-Loader" folder and type ".\Compile.bat"
 
@@ -66,7 +68,6 @@ Requires GCC 7.1.0 or later and Binutils 2.29.1 or later. I cannot make any guar
     *That's it! It should compile and a binary called "STUBLOAD.EFI" will be output into the "Backend" folder.*
 
 ***Linux:***  
-
 1. Download and extract or clone this repository into a dedicated folder, preferably somewhere easy like ~/BareMetalx64
 
 2. If, in the terminal, "gcc --version" reports GCC 7.1.0 or later and "ld --version" reports 2.29.1 or later, do steps 2a, 2b, and 2c. Otherwise go to step 3.
@@ -97,7 +98,7 @@ Requires GCC 7.1.0 or later and Binutils 2.29.1 or later. I cannot make any guar
 
 10. Once make is done making, do "make -k check" and do a crossword or something. There should be a very small number of errors, if any.
 
-11. Finally, do "make install" to install the package into binutils-binaries. Congratulations, you've just built some of the biggest Linux sources ever!
+11. Finally, do "make install" to install the package into binutils-binaries. Congratulations, you've just built some of the biggest Linux sources ever! You can also safely delete the folders that were created by the cloning process now--they'll be several GBs at this point.
 
 12. Open Compile.sh in an editor of your choice (nano, gedit, vim, etc.) and set the GCC_FOLDER_NAME variable at the top (e.g. gcc-8 without any slashes). Do the same thing for the BINUTILS_FOLDER_NAME, except use the binutils-binaries folder.
 
@@ -108,6 +109,8 @@ Requires GCC 7.1.0 or later and Binutils 2.29.1 or later. I cannot make any guar
     For more information about building GCC and Binutils, see these: http://www.linuxfromscratch.org/blfs/view/cvs/general/gcc.html & http://www.linuxfromscratch.org/lfs/view/development/chapter06/binutils.html  
 
 ## Change Log
+
+V1.1 (4/9/2019) - Cleaned up unnecessary memory pollution, upgraded GNU-EFI backend to match https://github.com/KNNSpeed/Simple-UEFI-Bootloader, added ARM64 binary to releases.
 
 V1.0 (9/23/2018) - Initial release. No bugs with this release so far.
 

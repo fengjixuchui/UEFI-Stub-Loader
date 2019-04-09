@@ -30,7 +30,7 @@ perl -pi -e 's/\r\n/\n/g' h_files.txt
 
 CurDir=$PWD
 GCC_FOLDER_NAME=gcc-linux
-EFI_FOLDER_NAME=gnu-efi-3.0.8
+EFI_FOLDER_NAME=gnu-efi-3.0.9
 BINUTILS_FOLDER_NAME=binutils-2.29.1-linux
 LinkerScript="$EFI_FOLDER_NAME/gnuefi/elf_x86_64_efi.lds"
 
@@ -164,7 +164,7 @@ set +v
 # Remove -s in the above command to keep debug symbols in the output binary.
 
 #
-# Create an EFI exectuable from program.so and output the program size
+# Create an EFI executable from program.so and output the program size
 #
 
 echo

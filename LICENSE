@@ -16,7 +16,7 @@ The licenses for GNU-EFI can be found in README.efilib in the GNU-EFI folder in
 All remaining source not covered by a license is released under the following
 license (note the copyright is non-exclusive):
 
-Copyright (c) 2018 KNNSpeed
+Copyright (c) 2018-2019 KNNSpeed
 
 This software is provided free of charge in hopes that it may be useful, and it
 can be downloaded and used in whole or in part. However, by using, copying,
@@ -35,19 +35,19 @@ just examples: the important point is that the exact original source is
 identified and attributed.
 
 Short:
-// From V1.0 of https://github.com/KNNSpeed/UEFI-Stub-Loader
+// From V1.1 of https://github.com/KNNSpeed/UEFI-Stub-Loader
 
 Medium:
-// From KNNSpeed's "UEFI Stub Loader," V1.0:
+// From KNNSpeed's "UEFI Stub Loader," V1.1:
 // https://github.com/KNNSpeed/UEFI-Stub-Loader
 
 Long (Recommended):
 // From KNNSpeed's "UEFI Stub Loader":
 // https://github.com/KNNSpeed/UEFI-Stub-Loader
-// V1.0, [Date you got it]
+// V1.1, [Date you got it]
 
 The last line of the long form might look like:
-V1.0, September 23, 2018
+V1.1, April 9, 2019
 
 2) THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
