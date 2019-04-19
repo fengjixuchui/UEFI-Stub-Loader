@@ -2,7 +2,7 @@
 //  UEFI Stub Loader: Main Loader
 //==================================================================================================================================
 //
-// Version 2.0
+// Version 2.1
 //
 // Author:
 //  KNNSpeed
@@ -22,13 +22,21 @@
 //
 // Put this program anywhere you want in the EFI system partition and point your
 // UEFI firmware to it as a boot option. The default bootable file that UEFI
-// firmware looks for is BOOTX64.EFI (or BOOTAA64.EFI for ARM64) in the
-// directory /EFI/boot/, so you can also just rename the stub loader file
-// accordingly and put it at that location.
+// firmware looks for is BOOTX64.EFI (or BOOTAA64.EFI for ARM64) in the directory
+// /EFI/boot/, so you can also just rename the stub loader file accordingly and
+// put it at that location.
 //
-// You will also need to put your EFI kernel image somewhere on the same
-// partition, and you will need to make a file called Kernelcmd.txt, which
-// should be stored at the root of the partition.
+// You will also need to put your EFI kernel image, usually called "vmlinuz," and
+// its corresponding "initrd" file (if the distro uses one) somewhere on the same
+// EFI system partition. Lastly, you will need to make a file called
+// Kernelcmd.txt--this should be stored in the same folder as the Stub Loader
+// itself. See the next section for how to properly format this file.
+//
+// NOTE: With V2.0, the location of Kernelcmd.txt is different from previous
+// versions in order to allow using multiple Linux OSes. Each OS will need its
+// own Stub Loader & Kernelcmd.txt in addition to vmlinuz & initrd (if
+// applicable), as this allows using the machine's native UEFI boot manager to
+// select between them as desired.
 //
 // Kernelcmd.txt Format and Contents:
 //
@@ -61,10 +69,6 @@
 //
 
 #include "Stubloader.h"
-
-#define MAJOR_VER 2
-#define MINOR_VER 0
-
 
 EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
@@ -264,7 +268,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 #endif
 
   // Read text file into memory now that we know the file size
-  CHAR8 * KernelcmdArray;
+  CHAR16 * KernelcmdArray;
   // Reserve memory for text file
   Status = ST->BootServices->AllocatePool(EfiBootServicesData, FileInfo->FileSize, (void**)&KernelcmdArray);
   if(EFI_ERROR(Status))
@@ -318,47 +322,59 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
   // Get size of kernel image path & command line and populate the data retention variables
   UINT64 FirstLineLength = 0;
-  UINT32 KernelPathSize = 0;
+  UINT64 KernelPathSize = 0;
 
-  for(UINT64 i = 2; i < FileInfo->FileSize; i++) // i starts at 2 to skip the BOM
+  for(UINT64 i = 1; i < ((FileInfo->FileSize) >> 1); i++) // i starts at 1 to skip the BOM, ((FileInfo->FileSize) >> 1) is the number of 2-byte units in the file
   {
-    if(KernelcmdArray[i] == '\n')
+    if(KernelcmdArray[i] == L'\n')
     {
-      // UTF-16/UCS-2 means there's an extra byte after the newline.
-      FirstLineLength = i + 1 + 1; // BE Users: subtract 1 here
-      // The extra + 1 is to start the command line parse in the correct place
+      // Account for the L'\n'
+      FirstLineLength = i + 1;
+      // The extra +1 is to start the command line parse in the correct place
       break;
     }
-    else if(KernelcmdArray[i] == '\r')
+    else if(KernelcmdArray[i] == L'\r')
     {
       // There'll be a \n after the \r
-      FirstLineLength = i + 3 + 1; // BE Users: subtract 1 here
+      FirstLineLength = i + 1 + 1;
       // The extra +1 is to start the command line parse in the correct place
       break;
     }
 
-    if(KernelcmdArray[i] != ' ') // There might be an errant space or two. Ignore them.
+    if(KernelcmdArray[i] != L' ') // There might be an errant space or two. Ignore them.
     {
       KernelPathSize++;
     }
   }
-  KernelPathSize += 2; // Need two more bytes for the null terminator's two bytes
+  UINT64 KernelPathLen = KernelPathSize; // Need this for later
+  // Need to add null terminator. Multiply by size of CHAR16 (2 bytes) to get size.
+  KernelPathSize = (KernelPathSize + 1) << 1; // (KernelPathSize + 1) * sizeof(CHAR16)
+
+#ifdef DEBUG_ENABLED
+  Print(L"KernelPathSize: %llu\r\n", KernelPathSize);
+#endif
 
   // Command line's turn
-  UINT32 CmdlineSize = 0; // Linux kernel only takes 256 to 4096 chars depending on architecture. Here's a billion.
+  UINT32 CmdlineSize = 0; // Linux kernel only takes 256 to 4096 chars depending on architecture. Here's a couple billion.
 
-  for(UINT64 j = FirstLineLength; j < FileInfo->FileSize; j++)
+  for(UINT64 j = FirstLineLength; j < ((FileInfo->FileSize) >> 1); j++)
   {
-    if((KernelcmdArray[j] == '\n') || (KernelcmdArray[j] == '\r')) // Reached the end of the line
+    if((KernelcmdArray[j] == L'\n') || (KernelcmdArray[j] == L'\r')) // Reached the end of the line
     {
       break;
     }
 
     CmdlineSize++;
   }
-  CmdlineSize += 2; // Need two more bytes for the null terminator's two bytes
+  UINT64 CmdlineLen = CmdlineSize; // Need this for later
+  // Need to add null terminator. Multiply by size of CHAR16 (2 bytes) to get size.
+  CmdlineSize = (CmdlineSize + 1) << 1; // (CmdlineSize + 1) * sizeof(CHAR16)
 
-  UINT8 * KernelPath; // EFI Kernel file's Path
+#ifdef DEBUG_ENABLED
+  Print(L"CmdlineSize: %llu\r\n", CmdlineSize);
+#endif
+
+  CHAR16 * KernelPath; // EFI Kernel file's Path
   Status = ST->BootServices->AllocatePool(EfiBootServicesData, KernelPathSize, (void**)&KernelPath);
   if(EFI_ERROR(Status))
   {
@@ -367,7 +383,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     return Status;
   }
 
-  UINT8 * Cmdline; // Command line to pass to EFI kernel
+  CHAR16 * Cmdline; // Command line to pass to EFI kernel
   Status = ST->BootServices->AllocatePool(EfiLoaderData, CmdlineSize, (void**)&Cmdline);
   if(EFI_ERROR(Status))
   {
@@ -376,56 +392,42 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     return Status;
   }
 
-  FirstLineLength = 0;
-
-  for(UINT64 i = 2; i < FileInfo->FileSize; i++)
+  for(UINT64 i = 1; i < FirstLineLength; i++)
   {
-    if(KernelcmdArray[i] == '\n')
+    if((KernelcmdArray[i] == L'\n') || (KernelcmdArray[i] == L'\r'))
     {
-      // UTF-16/UCS-2 means there's an extra byte after the newline.
-      FirstLineLength = i + 1 + 1; // BE Users: subtract 1 here
-      // The extra + 1 is to start the command line parse in the correct place
-      break;
-    }
-    else if(KernelcmdArray[i] == '\r')
-    {
-      // There'll be a \n after the \r
-      FirstLineLength = i + 3 + 1; // BE Users: subtract 1 here
-      // The extra +1 is to start the command line parse in the correct place
       break;
     }
 
-    if(KernelcmdArray[i] != ' ') // There might be an errant space or two. Ignore them.
+    if(KernelcmdArray[i] != L' ') // There might be an errant space or two. Ignore them.
     {
-      KernelPath[i-2] = KernelcmdArray[i]; // i-2 to ignore the 2 bytes of UTF-16 BOM
+      KernelPath[i-1] = KernelcmdArray[i]; // i-1 to ignore the 2 bytes of UTF-16 BOM
     }
   }
-  KernelPath[KernelPathSize - 2] = 0x00; // Need to null-terminate this string
-  KernelPath[KernelPathSize - 1] = 0x00; // Yay wide strings...
+  KernelPath[KernelPathLen] = L'\0'; // Need to null-terminate this string
 
   // Command line's turn
-  for(UINT64 j = FirstLineLength; j < FileInfo->FileSize; j++)
+  for(UINT64 j = FirstLineLength; j < ((FileInfo->FileSize) >> 1); j++)
   {
-    if((KernelcmdArray[j] == '\n') || (KernelcmdArray[j] == '\r')) // Reached the end of the line
+    if((KernelcmdArray[j] == L'\n') || (KernelcmdArray[j] == L'\r')) // Reached the end of the line
     {
       break;
     }
 
     Cmdline[j-FirstLineLength] = KernelcmdArray[j];
   }
-  Cmdline[CmdlineSize - 2] = 0x00; // Need to null-terminate this string
-  Cmdline[CmdlineSize - 1] = 0x00; // Yay wide strings...
+  Cmdline[CmdlineLen] = L'\0'; // Need to null-terminate this string
 
 #ifdef DEBUG_ENABLED
-  Print(L"Kernel image path: %s\r\nKernel image path size: %u\r\n", (CHAR16 *)KernelPath, KernelPathSize);
-  Print(L"Kernel command line: %s\r\nKernel command line size: %u\r\n", (CHAR16 *)Cmdline, CmdlineSize);
+  Print(L"Kernel image path: %s\r\nKernel image path size: %u\r\n", KernelPath, KernelPathSize);
+  Print(L"Kernel command line: %s\r\nKernel command line size: %u\r\n", Cmdline, CmdlineSize);
   Keywait(L"Loading image... (might take a second or two after pressing a key)\r\n");
 #endif
 
   // Get UEFI device path that corresponds to STUBLOADER's EFI partition
   // Doesn't seem like we can use EFI_SIMPLE_FILE_SYSTEM_PROTOCOL constructs for BS->LoadImage, instead we need to use EFI_DEVICE_PATH_PROTOCOL
   EFI_DEVICE_PATH_PROTOCOL * FullDevicePath;
-  FullDevicePath = FileDevicePath(LoadedImage->DeviceHandle, (CHAR16 *)KernelPath); // This allocates memory for us
+  FullDevicePath = FileDevicePath(LoadedImage->DeviceHandle, KernelPath); // This allocates memory for us
 
   // Free pools allocated from before as they are no longer needed
   Status = BS->FreePool(TxtFilePath);
@@ -490,11 +492,11 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     return Status;
   }
 
-  LoadedKernelImage->LoadOptions = (CHAR16 *)Cmdline; // This was allocated pool of EfiLoaderData earlier so that it persists into the kernel.
+  LoadedKernelImage->LoadOptions = Cmdline; // This was allocated pool of EfiLoaderData earlier so that it persists into the kernel.
   LoadedKernelImage->LoadOptionsSize = CmdlineSize;
 
 #ifdef DEBUG_ENABLED
-  Print(L"Kernel command line: %s\r\nKernel command line size: %u\r\n\n", (CHAR16*)Cmdline, CmdlineSize);
+  Print(L"Kernel command line: %s\r\nKernel command line size: %u\r\n\n", Cmdline, CmdlineSize);
   Print(L"Verify loaded command line: %s\r\nCommand line size: %u\r\n", LoadedKernelImage->LoadOptions, LoadedKernelImage->LoadOptionsSize);
   Keywait(L"Starting image...\r\n");
 #endif
