@@ -2,7 +2,7 @@
 //  UEFI Stub Loader: Main Loader
 //==================================================================================================================================
 //
-// Version 1.1
+// Version 2.0
 //
 // Author:
 //  KNNSpeed
@@ -23,7 +23,7 @@
 // Put this program anywhere you want in the EFI system partition and point your
 // UEFI firmware to it as a boot option. The default bootable file that UEFI
 // firmware looks for is BOOTX64.EFI (or BOOTAA64.EFI for ARM64) in the
-// directory /EFI/boot/, so you can also just rename the stub loader file 
+// directory /EFI/boot/, so you can also just rename the stub loader file
 // accordingly and put it at that location.
 //
 // You will also need to put your EFI kernel image somewhere on the same
@@ -62,8 +62,8 @@
 
 #include "Stubloader.h"
 
-#define MAJOR_VER 1
-#define MINOR_VER 1
+#define MAJOR_VER 2
+#define MINOR_VER 0
 
 
 EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
@@ -85,7 +85,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
 #ifdef DISABLE_UEFI_WATCHDOG_TIMER
   // Disable watchdog timer for debugging
-  Status = BS->SetWatchdogTimer (0, 0, 0, NULL);
+  Status = BS->SetWatchdogTimer(0, 0, 0, NULL);
   if(EFI_ERROR(Status))
   {
     Print(L"Error stopping watchdog, timeout still counting down...\r\n");
@@ -119,7 +119,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   // Get ready to get filesystem support
   EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem;
 
-  // Get filesystem support on the EFISTUB.EFI's DeviceHandle, then we can access a directory structure.
+  // Get filesystem support on STUBLOAD.EFI's DeviceHandle, then we can access a directory structure.
   Status = ST->BootServices->OpenProtocol(LoadedImage->DeviceHandle, &FileSystemProtocol, (void**)&FileSystem, ImageHandle, NULL, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
   if(EFI_ERROR(Status))
   {
@@ -139,12 +139,66 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     return Status;
   }
 
-  // Get ready to get the Kernelcmd.txt file
+  // Locate Kernelcmd.txt, which should be in the same directory as this STUBLOAD.EFI program
+  // ((FILEPATH_DEVICE_PATH*)LoadedImage->FilePath)->PathName is, e.g., \EFI\BOOT\BOOTX64.EFI
+
+  CHAR16 * BootFilePath = ((FILEPATH_DEVICE_PATH*)LoadedImage->FilePath)->PathName;
+
+#ifdef DEBUG_ENABLED
+  Print(L"BootFilePath: %s\r\n", BootFilePath);
+#endif
+
+  UINTN TxtFilePathPrefixLength = 0;
+  UINTN BootFilePathLength = 0;
+
+  while(BootFilePath[BootFilePathLength] != L'\0')
+  {
+    if(BootFilePath[BootFilePathLength] == L'\\')
+    {
+      TxtFilePathPrefixLength = BootFilePathLength;
+    }
+    BootFilePathLength++;
+  }
+  BootFilePathLength += 1; // For Null Term
+  TxtFilePathPrefixLength += 1; // To account for the last '\' in the file path (file path prefix does not get null-terminated)
+
+#ifdef DEBUG_ENABLED
+  Print(L"BootFilePathLength: %llu, TxtFilePathPrefixLength: %llu, BootFilePath Size: %llu \r\n", BootFilePathLength, TxtFilePathPrefixLength, StrSize(BootFilePath));
+  Keywait(L"\0");
+#endif
+
+  CONST CHAR16 TxtFileName[14] = L"Kernelcmd.txt";
+
+  UINTN TxtFilePathPrefixSize = TxtFilePathPrefixLength * sizeof(CHAR16);
+  UINTN TxtFilePathSize = TxtFilePathPrefixSize + sizeof(TxtFileName);
+
+  CHAR16 * TxtFilePath;
+
+  Status = ST->BootServices->AllocatePool(EfiBootServicesData, TxtFilePathSize, (void**)&TxtFilePath);
+  if(EFI_ERROR(Status))
+  {
+    Print(L"TxtFilePathPrefix AllocatePool error. 0x%llx\r\n", Status);
+    Keywait(L"\0");
+    return Status;
+  }
+
+  // Don't really need this. Data is measured to be the right size, meaning every byte in TxtFilePath gets overwritten.
+//  ZeroMem(TxtFilePath, TxtFilePathSize);
+
+  CopyMem(TxtFilePath, BootFilePath, TxtFilePathPrefixSize);
+  CopyMem(&TxtFilePath[TxtFilePathPrefixLength], TxtFileName, sizeof(TxtFileName));
+
+#ifdef DEBUG_ENABLED
+  Print(L"TxtFilePath: %s, TxtFilePath Size: %llu\r\n", TxtFilePath, TxtFilePathSize);
+  Keywait(L"\0");
+#endif
+
+  // Get ready to open the Kernelcmd.txt file
   EFI_FILE *KernelcmdFile;
 
-  // Open the kernelcmd.txt file from current drive root and assign it to the KernelcmdFile EFI_FILE variable
+  // Open the kernelcmd.txt file and assign it to the KernelcmdFile EFI_FILE variable
   // It turns out the Open command can support directory trees with "\" like in Windows. Neat!
-  Status = CurrentDriveRoot->Open(CurrentDriveRoot, &KernelcmdFile, L"Kernelcmd.txt", EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY);
+  Status = CurrentDriveRoot->Open(CurrentDriveRoot, &KernelcmdFile, TxtFilePath, EFI_FILE_MODE_READ, EFI_FILE_READ_ONLY);
   if (EFI_ERROR(Status))
   {
     Keywait(L"Kernelcmd.txt file is missing\r\n");
@@ -266,7 +320,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   UINT64 FirstLineLength = 0;
   UINT32 KernelPathSize = 0;
 
-  for(UINT64 i = 2; i < FileInfo->FileSize; i++)
+  for(UINT64 i = 2; i < FileInfo->FileSize; i++) // i starts at 2 to skip the BOM
   {
     if(KernelcmdArray[i] == '\n')
     {
@@ -289,7 +343,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   KernelPathSize += 2; // Need two more bytes for the null terminator's two bytes
 
   // Command line's turn
-  UINT32 CmdlineSize = 0; // Linux kernel only takes 256 to 4096 chars depending on architecture. Here's 4 billion.
+  UINT32 CmdlineSize = 0; // Linux kernel only takes 256 to 4096 chars depending on architecture. Here's a billion.
 
   for(UINT64 j = FirstLineLength; j < FileInfo->FileSize; j++)
   {
@@ -312,7 +366,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   }
 
   UINT8 * Cmdline; // Command line to pass to EFI kernel
-  Status = ST->BootServices->AllocatePool(EfiBootServicesData, CmdlineSize, (void**)&Cmdline);
+  Status = ST->BootServices->AllocatePool(EfiLoaderData, CmdlineSize, (void**)&Cmdline);
   if(EFI_ERROR(Status))
   {
     Print(L"Cmdline AllocatePool error. 0x%llx\r\n", Status);
@@ -370,11 +424,20 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   FullDevicePath = FileDevicePath(LoadedImage->DeviceHandle, (CHAR16 *)KernelPath); // This allocates memory for us
 
   // Free pools allocated from before as they are no longer needed
+  Status = BS->FreePool(TxtFilePath);
+  if(EFI_ERROR(Status))
+  {
+    Print(L"Error freeing TxtFilePathPrefix pool. 0x%llx\r\n", Status);
+    Keywait(L"\0");
+    return Status;
+  }
+
   Status = BS->FreePool(KernelPath);
   if(EFI_ERROR(Status))
   {
     Print(L"Error freeing KernelPath pool. 0x%llx\r\n", Status);
     Keywait(L"\0");
+    return Status;
   }
 
   Status = BS->FreePool(KernelcmdArray);
@@ -382,6 +445,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   {
     Print(L"Error freeing KernelcmdArray pool. 0x%llx\r\n", Status);
     Keywait(L"\0");
+    return Status;
   }
 
   Status = BS->FreePool(FileInfo);
@@ -389,10 +453,11 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   {
     Print(L"Error freeing FileInfo pool. 0x%llx\r\n", Status);
     Keywait(L"\0");
+    return Status;
   }
 
   // Finally time to get the kernel image, which will need its own EFI_HANDLE
-  EFI_HANDLE LoadedKernelImageHandle; // Don't need to explicitly allocate pool memory for non-pointers!
+  EFI_HANDLE LoadedKernelImageHandle;
   // Load kernel image from its location
   Status = ST->BootServices->LoadImage(FALSE, ImageHandle, FullDevicePath, NULL, 0, &LoadedKernelImageHandle);
   if(EFI_ERROR(Status))
@@ -407,6 +472,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   {
     Print(L"Error freeing FullDevicePath pool. 0x%llx\r\n", Status);
     Keywait(L"\0");
+    return Status;
   }
 
   // Now to associate the command line with the kernel, which is done by adding the command line to the load options of the loaded kernel image
@@ -420,7 +486,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     return Status;
   }
 
-  LoadedKernelImage->LoadOptions = (CHAR16 *)Cmdline;
+  LoadedKernelImage->LoadOptions = (CHAR16 *)Cmdline; // This was allocated pool of EfiLoaderData earlier so that it persists into the kernel.
   LoadedKernelImage->LoadOptionsSize = CmdlineSize;
 
 #ifdef DEBUG_ENABLED
@@ -428,13 +494,6 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   Print(L"Verify loaded command line: %s\r\nCommand line size: %u\r\n", LoadedKernelImage->LoadOptions, LoadedKernelImage->LoadOptionsSize);
   Keywait(L"Starting image...\r\n");
 #endif
-
-  Status = BS->FreePool(Cmdline);
-  if(EFI_ERROR(Status))
-  {
-    Print(L"Error freeing Cmdline pool. 0x%llx\r\n", Status);
-    Keywait(L"\0");
-  }
 
   // Execute kernel EFI image by StartImage
   Status = ST->BootServices->StartImage(LoadedKernelImageHandle, NULL, NULL);

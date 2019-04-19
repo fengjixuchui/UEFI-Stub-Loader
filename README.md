@@ -1,7 +1,7 @@
 # UEFI Stub Loader
 Load the Linux EFI Stub (or any EFI application) on 64-bit systems that don't support UEFI firmware command lines. ARM64 and x86_64 binaries are provided.  
 
-**Version 1.1**
+**Version 2.0**
 
 ## About this program  
 
@@ -109,6 +109,8 @@ Requires GCC 7.1.0 or later and Binutils 2.29.1 or later. I cannot make any guar
     For more information about building GCC and Binutils, see these: http://www.linuxfromscratch.org/blfs/view/cvs/general/gcc.html & http://www.linuxfromscratch.org/lfs/view/development/chapter06/binutils.html  
 
 ## Change Log
+
+V2.0 (4/19/2019) - Fixed a ridiculous bug that sometimes prevented the command line from reaching the kernel and changed loader behavior to read Kernelcmd.txt from the same folder as the Stub Loader instead of the drive root. Moving Kernelcmd.txt like this enables multiple Linux installs to coexist, allowing each to be booted by their own personal Stub Loader & Kernelcmd.txt. In such a multi-OS system, use the machine's firmware boot menu--the one accessed by F10, F11, F12, ALT (on Macs), etc.--to pick which one to boot.
 
 V1.1 (4/9/2019) - Cleaned up unnecessary memory pollution, upgraded GNU-EFI backend to match https://github.com/KNNSpeed/Simple-UEFI-Bootloader, added ARM64 binary to releases.
 
