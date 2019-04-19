@@ -324,13 +324,15 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   {
     if(KernelcmdArray[i] == '\n')
     {
-      FirstLineLength = i + 1 + 1; // UTF-16/UCS-2 means there's an extra byte after the newline.
+      // UTF-16/UCS-2 means there's an extra byte after the newline.
+      FirstLineLength = i + 1 + 1; // BE Users: subtract 1 here
       // The extra + 1 is to start the command line parse in the correct place
       break;
     }
     else if(KernelcmdArray[i] == '\r')
     {
-      FirstLineLength = i + 3 + 1; // There'll be a \n after the \r
+      // There'll be a \n after the \r
+      FirstLineLength = i + 3 + 1; // BE Users: subtract 1 here
       // The extra +1 is to start the command line parse in the correct place
       break;
     }
@@ -380,13 +382,15 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
   {
     if(KernelcmdArray[i] == '\n')
     {
-      FirstLineLength = i + 1 + 1; // UTF-16/UCS-2 means there's an extra byte after the newline.
+      // UTF-16/UCS-2 means there's an extra byte after the newline.
+      FirstLineLength = i + 1 + 1; // BE Users: subtract 1 here
       // The extra + 1 is to start the command line parse in the correct place
       break;
     }
     else if(KernelcmdArray[i] == '\r')
     {
-      FirstLineLength = i + 3 + 1; // There'll be a \n after the \r
+      // There'll be a \n after the \r
+      FirstLineLength = i + 3 + 1; // BE Users: subtract 1 here
       // The extra +1 is to start the command line parse in the correct place
       break;
     }
