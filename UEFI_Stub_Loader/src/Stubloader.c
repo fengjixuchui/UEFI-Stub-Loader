@@ -40,14 +40,15 @@
 //
 // Kernelcmd.txt Format and Contents:
 //
-// Kernelcmd.txt should be stored in UTF-16 format at the root of the EFI
-// system partition. Windows Notepad and Wordpad can save text files in this
-// format (select "Unicode" as the format in the "Save As" dialog). Linux users
-// can use gedit or xed, saving as a .txt file with UTF-16 encoding. Also, it
-// does not matter if the file uses Windows (CRLF) or Unix (LF) line endings,
-// but the file does need a 2-byte identification Byte Order Mark (BOM). Don't
-// worry too much about the BOM; it gets added automatically by all of the
-// aforementioned editors when saving with the correct encoding.
+// Kernelcmd.txt should be stored in UTF-16 format in the same directory as the
+// stub loader on the EFI system partition. Windows Notepad and Wordpad can save
+// text files in this format (select "Unicode Text Document" or "UTF-16 LE" as
+// the encoding format in the "Save As" dialog). Linux users can use gedit or
+// xed, saving as a .txt file with UTF-16 encoding. Also, it does not matter if
+// the file uses Windows (CRLF) or Unix (LF) line endings, but the file does
+// need a 2-byte identification Byte Order Mark (BOM). Don't worry too much about
+// the BOM; it gets added automatically by all of the aforementioned editors when
+// saving with the correct encoding.
 //
 // The contents of the text file are simple: only three lines are needed. The
 // first line should be the location of the kernel to be booted relative to the
